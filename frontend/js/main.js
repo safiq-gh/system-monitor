@@ -1,41 +1,31 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+function connectWS() {
+    const ws = new WebSocket("ws://127.0.0.1:8000/api/ws/metrics");
 
-async function fetchMetrics() {
-    try {
-        const cpuRes = await fetch(`${API_BASE}/cpu`);
-        const memRes = await fetch(`${API_BASE}/memory`);
-        const diskRes = await fetch(`${API_BASE}/disk`);
+    ws.onopen = () => console.log("WS connected");
 
-        const cpuData = await cpuRes.json();
-        const memData = await memRes.json();
-        const diskData = await diskRes.json();
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
 
-        document.getElementById("cpu").innerText =
-            cpuData.cpu_percent + "%";
+        document.getElementById("cpu").innerText = data.cpu + "%";
+        document.getElementById("memory").innerText = data.memory + "% used";
+        document.getElementById("disk").innerText = data.disk + "% used";
 
-        document.getElementById("memory").innerText =
-            memData.percent + "% used";
+        const list = document.getElementById("processes");
+        list.innerHTML = "";
+        data.processes.forEach(p => {
+            const li = document.createElement("li");
+            li.innerText = `${p.name} (CPU: ${p.cpu}%)`;
+            list.appendChild(li);
+        });
+    };
 
-        document.getElementById("disk").innerText =
-            diskData.percent + "% used";
-	const procRes = await fetch(`${API_BASE}/processes`);
-	const procData = await procRes.json();
+    ws.onclose = () => {
+        console.log("WS closed, reconnecting...");
+        setTimeout(connectWS, 1000);
+    };
 
-	const list = document.getElementById("processes");
-	list.innerHTML = "";
-
-	procData.forEach(p => {
-    	const li = document.createElement("li");
-    	li.innerText = `${p.name} (CPU: ${p.cpu}%)`;
-    	list.appendChild(li);
-	});
-
-
-    } catch (err) {
-        console.error("Error fetching metrics:", err);
-    }
+    ws.onerror = () => ws.close();
 }
 
-fetchMetrics();
-setInterval(fetchMetrics, 5000);
+connectWS();
 

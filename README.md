@@ -1,237 +1,210 @@
-# System Monitoring Dashboard (v1 – Foundation)
+# System Monitoring Dashboard
 
-A lightweight full-stack web application that collects and displays real-time system resource metrics. Built as a learning project to demonstrate full-stack development fundamentals, REST API design, and client-server communication using HTTP polling.
+A lightweight full-stack system monitoring web application that demonstrates two progressively improved architectures for collecting and displaying system resource metrics.
 
----
+## 🎯 Overview
 
-## Project Scope
+This project showcases the evolution from traditional REST APIs with HTTP polling to modern WebSocket-based real-time updates:
 
-### Included in v1 – Foundation
+- **v1 – Foundation:** REST APIs with HTTP polling  
+- **v2 – Real-Time:** WebSocket-based, server-pushed updates  
 
-- Backend REST API using FastAPI to expose system metrics
-- Collection of CPU usage, memory usage, disk usage, and top processes via `psutil`
-- JSON response format for all endpoints
-- Frontend interface displaying metrics in a tabular format
-- HTTP polling mechanism for periodic data refresh (5-second interval)
-- Single-page application with vanilla JavaScript
-- Basic error handling for API failures
-- Static file serving via FastAPI
+Built as a learning-focused system to understand backend–frontend data flow, API design, and real-time communication without relying on heavy frameworks or external platforms.
 
-### Intentionally Excluded from v1
+## 📋 Version Overview
 
-- User authentication and authorization
-- Database or persistent storage
-- Historical data tracking or time-series visualization
-- Alerting or notification system
-- WebSocket or server-sent events for real-time updates
-- Multi-server or distributed monitoring
-- Configuration management
-- Production deployment setup (HTTPS, reverse proxy, etc.)
-- Unit tests and integration tests
-- Containerization
+### v1 – Foundation (Completed)
+- REST API–based system monitoring
+- HTTP polling for periodic updates
+- Simple, explicit client–server interaction
 
----
+### v2 – Real-Time (Completed)
+- WebSocket-based real-time data streaming
+- Event-driven updates without polling
+- Persistent client–server connection
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-**Backend**
-- Python 3.8+
-- FastAPI (web framework)
-- psutil (system metrics library)
-- uvicorn (ASGI server)
+### Backend
+- Python 3.10+
+- FastAPI
+- psutil
+- uvicorn (with WebSocket support)
 
-**Frontend**
+### Frontend
 - HTML5
 - CSS3
 - Vanilla JavaScript (ES6+)
-- Fetch API for HTTP requests
+- WebSocket API (v2)
 
-**Environment**
+### Environment
 - Ubuntu 22.04 (WSL2)
-- Development server only
+- Development setup only
 
----
+## 🏗️ Architecture
 
-## Architecture Overview
+### v1 – REST + Polling
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Web Browser                        │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  HTML + CSS + JavaScript                          │  │
-│  │  - Displays metrics in tables                     │  │
-│  │  - Polls /api/* every 5 seconds                   │  │
-│  └───────────────────────────────────────────────────┘  │
-└────────────────────┬────────────────────────────────────┘
-                     │ HTTP GET (polling)
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              FastAPI Backend (Python)                   │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  REST API Endpoints                               │  │
-│  │  - /api/cpu        → CPU usage %                  │  │
-│  │  - /api/memory     → Memory usage MB/%            │  │
-│  │  - /api/disk       → Disk usage GB/%              │  │
-│  │  - /api/processes  → Top 10 processes by CPU      │  │
-│  └────────────────┬──────────────────────────────────┘  │
-│                   │                                      │
-│  ┌────────────────▼──────────────────────────────────┐  │
-│  │  psutil library                                   │  │
-│  │  - Queries system metrics                         │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                     │
-                     ▼
-           ┌─────────────────┐
-           │  Ubuntu (WSL2)  │
-           │  System Metrics │
-           └─────────────────┘
+Browser
+   │
+   │ HTTP GET (every 5s)
+   ▼
+FastAPI REST API
+   │
+   ▼
+Operating System Metrics (psutil)
 ```
 
----
+- Simple request–response model
+- Easy to reason about
+- Inefficient for frequent updates
 
-## API Endpoints
+### v2 – WebSocket (Real-Time)
 
-| Endpoint          | Method | Description                              | Response Fields                                      |
-|-------------------|--------|------------------------------------------|------------------------------------------------------|
-| `/api/cpu`        | GET    | Current CPU usage percentage             | `{ "cpu_percent": float }`                           |
-| `/api/memory`     | GET    | Memory usage in MB and percentage        | `{ "used_mb": float, "total_mb": float, "percent": float }` |
-| `/api/disk`       | GET    | Disk usage in GB and percentage          | `{ "used_gb": float, "total_gb": float, "percent": float }` |
-| `/api/processes`  | GET    | Top 10 processes sorted by CPU usage     | `{ "processes": [ { "pid": int, "name": str, "cpu_percent": float, "memory_mb": float } ] }` |
+```
+Browser
+   ⇄ WebSocket (persistent connection)
+FastAPI WebSocket Endpoint
+   │
+   ▼
+Operating System Metrics (psutil)
+```
 
-All endpoints return JSON with appropriate HTTP status codes (200 for success, 500 for server errors).
+- Server pushes updates
+- No repeated HTTP requests
+- Data updates without page refresh
 
----
+## 🔌 API Reference
 
-## Setup Instructions
+### v1 Endpoints
+
+| Endpoint         | Method | Description                     |
+|------------------|--------|---------------------------------|
+| `/api/cpu`       | GET    | CPU usage percentage            |
+| `/api/memory`    | GET    | Memory usage statistics         |
+| `/api/disk`      | GET    | Disk usage statistics           |
+| `/api/processes` | GET    | Top CPU-consuming processes     |
+
+All endpoints return JSON.
+
+### v2 WebSocket Endpoint
+
+| Endpoint          | Description                                  |
+|-------------------|----------------------------------------------|
+| `/api/ws/metrics` | Streams live system metrics as JSON objects  |
+
+**Sample Payload:**
+```json
+{
+  "cpu": 27.3,
+  "memory": 62.1,
+  "disk": 44.8,
+  "processes": [
+    { "pid": 1234, "name": "python", "cpu": 12.3, "memory": 4.1 }
+  ]
+}
+```
+
+## 🚀 Setup Instructions
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip package manager
-- Ubuntu environment (WSL2 or native Linux)
+- Python 3.10+
+- pip
+- Linux environment (WSL2 or native)
 
 ### Installation
 
-1. Clone or extract the project directory:
+1. Clone the repository:
 ```bash
-   cd system-monitoring-dashboard
+git clone <repository-url>
+cd system-monitoring-dashboard
 ```
 
-2. Create a virtual environment:
+2. Create and activate virtual environment:
 ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 ```
 
 3. Install dependencies:
 ```bash
-   pip install fastapi uvicorn psutil
+pip install -r backend/requirements.txt
 ```
 
 ### Running the Application
 
-1. Start the backend server:
+1. **Start the Backend:**
 ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+cd backend
+python -m uvicorn app.main:app
 ```
 
-2. Open a web browser and navigate to:
+2. **Start the Frontend:**
+```bash
+cd frontend
+python -m http.server 5500
 ```
-   http://localhost:8000
+
+3. **Open in Browser:**
+```
+http://localhost:5500
 ```
 
-3. The dashboard will automatically begin polling for system metrics every 5 seconds.
+## 🎓 Key Design Decisions
 
-### Stopping the Application
+### REST → WebSocket Progression
 
-Press `Ctrl+C` in the terminal running the uvicorn server.
+- **v1** uses HTTP polling to keep behavior explicit and beginner-friendly
+- **v2** replaces polling with WebSockets to demonstrate real-time, event-driven systems
+- Both versions are kept to show architectural evolution
 
----
+### No Frontend Frameworks
 
-## Key Design Decisions
+- Focuses on raw DOM manipulation and WebSocket handling
+- Avoids build tools and hidden abstractions
 
-### HTTP Polling vs. WebSockets
+### No Persistence
 
-- **Choice**: HTTP polling with 5-second intervals
-- **Rationale**: Simpler to implement for v1, no connection state management required, adequate for non-critical monitoring use case
-- **Tradeoff**: Higher network overhead and latency compared to WebSockets, but acceptable for learning and low-frequency updates
+- Metrics are real-time only
+- Avoids premature database complexity
+- Emphasizes data flow over storage
 
-### FastAPI for Backend
+### Defensive System Programming
 
-- **Choice**: FastAPI over Flask or Django
-- **Rationale**: Built-in async support, automatic OpenAPI documentation, modern Python type hints, lightweight
-- **Tradeoff**: Less mature ecosystem than Flask, but better performance and developer experience
+- Handles restricted and short-lived OS processes
+- Avoids blocking the async event loop
+- Uses background threads for metric collection in v2
 
-### Vanilla JavaScript (No Framework)
+## ⚠️ Known Limitations
 
-- **Choice**: Plain JavaScript without React/Vue/Angular
-- **Rationale**: Demonstrates fundamental DOM manipulation and HTTP client concepts, reduces build complexity, appropriate for single-page dashboard
-- **Tradeoff**: More verbose code for DOM updates, but keeps dependencies minimal and concepts transparent
+- Single-machine monitoring only
+- No historical data or trend analysis
+- No authentication or access control
+- Development server only
+- Metrics reflect the WSL2 Linux environment, not bare-metal Windows
+- Browser behavior may close idle WebSocket connections (handled via reconnection logic)
 
-### No Data Persistence
+## 💡 Learning Outcomes
 
-- **Choice**: Metrics are not stored in a database
-- **Rationale**: v1 focuses on real-time monitoring only, avoids database setup and schema design complexity
-- **Tradeoff**: No historical analysis or trend visualization, addressed in future versions
+This project demonstrates:
 
-### psutil for Metrics Collection
+- REST API design with FastAPI
+- System metric collection using psutil
+- Client–server communication patterns
+- Difference between polling and event-driven architectures
+- Asynchronous programming pitfalls and solutions
+- WebSocket lifecycle handling
+- Clean project structure and versioned scope control
 
-- **Choice**: psutil library over parsing `/proc` files directly
-- **Rationale**: Cross-platform abstraction, well-tested, handles edge cases, simpler API
-- **Tradeoff**: External dependency, but standard in Python ecosystem
+## 📊 Project Status
 
----
+- ✅ **v1 – Foundation:** Complete and tagged
+- ✅ **v2 – Real-Time:** Complete and tagged
 
-## Known Limitations
-
-- **No historical data**: Only displays current snapshot, cannot show trends over time
-- **Single-server only**: Cannot monitor multiple machines
-- **Polling inefficiency**: HTTP polling creates unnecessary requests when metrics haven't changed significantly
-- **No error recovery**: Frontend does not gracefully handle prolonged backend outages
-- **Process filtering**: Shows top 10 processes only, no search or filtering options
-- **No responsive design**: UI is optimized for desktop browsers only
-- **Development server**: Uses uvicorn development mode, not suitable for production traffic
-- **Hardcoded refresh interval**: 5-second polling interval cannot be configured without code changes
-- **No metric thresholds**: Does not indicate when resources are critically low
-
----
-
-## Planned Improvements
-
-### v2 – Data Persistence and Visualization
-
-- Add SQLite database for storing metric snapshots
-- Implement time-series line charts using Chart.js or D3.js
-- Add date range filtering for historical data
-- Expose `/api/history` endpoint for time-based queries
-
-### v3 – Real-Time and Scalability
-
-- Replace HTTP polling with WebSocket connections
-- Add configurable alert thresholds with browser notifications
-- Implement multi-server monitoring with server selection UI
-- Add basic authentication for production use
-- Containerize with Docker for easier deployment
-
-### Future Considerations
-
-- Network I/O metrics (bytes sent/received)
-- GPU monitoring (if applicable)
-- Process-level drill-down (memory maps, open files, threads)
-- Export metrics in Prometheus-compatible format
+Further versions would focus on persistence, visualization, or multi-node monitoring, but are intentionally out of scope for this project.
 
 ---
 
-## Learning Goals
-
-This project was built to develop practical skills in:
-
-- Designing and implementing RESTful APIs with proper HTTP semantics
-- Collecting system metrics programmatically using Python libraries
-- Implementing client-server communication patterns
-- Working with asynchronous JavaScript (Fetch API, Promises)
-- Structuring a full-stack application with clear separation of concerns
-- Writing technical documentation for software projects
-- Understanding the tradeoffs between polling and event-driven architectures
-
-The v1 scope intentionally omits production features to focus on core full-stack development patterns and working software over comprehensive functionality.
+**Note:** This is a learning project designed to demonstrate fundamental concepts in system monitoring and real-time web applications.

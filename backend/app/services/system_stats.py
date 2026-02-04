@@ -3,7 +3,7 @@ from app.config import TOP_PROCESS_LIMIT
 
 def get_cpu_usage():
     try:
-        return psutil.cpu_percent(interval=1)
+        return psutil.cpu_percent(interval=0)
     except Exception:
         return 0
 
