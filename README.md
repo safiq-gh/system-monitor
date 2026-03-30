@@ -1,5 +1,6 @@
 # System Monitoring Dashboard
 
+<<<<<<< HEAD
 A lightweight full-stack system monitoring web application that demonstrates two progressively improved architectures for collecting and displaying system resource metrics.
 
 ## 🎯 Overview
@@ -22,9 +23,28 @@ Built as a learning-focused system to understand backend–frontend data flow, A
 - WebSocket-based real-time data streaming
 - Event-driven updates without polling
 - Persistent client–server connection
+=======
+![Dashboard](assets/SysMon.png)
+
+A lightweight full-stack application for monitoring real-time system metrics using a FastAPI backend and a minimal JavaScript frontend.
+
+## Overview
+
+This project exposes system-level metrics such as CPU, memory, disk usage, and active processes through REST APIs, and visualizes them via a browser-based dashboard.
+
+## Features
+
+- Real-time system metrics (CPU, memory, disk, processes)
+- REST API built with FastAPI
+- Structured JSON responses
+- HTTP polling (5s interval) for live updates
+- Lightweight frontend using vanilla JavaScript
+- Basic error handling for API failures
+>>>>>>> 50076f804956f8284534b2bc5e09e00bde0af542
 
 ## 🛠️ Tech Stack
 
+<<<<<<< HEAD
 ### Backend
 - Python 3.10+
 - FastAPI
@@ -59,9 +79,24 @@ Operating System Metrics (psutil)
 - Simple request–response model
 - Easy to reason about
 - Inefficient for frequent updates
+=======
+**Backend**
+- Python
+- FastAPI
+- psutil
+- Uvicorn
+
+**Frontend**
+- HTML, CSS
+- JavaScript (Fetch API)
+
+**Environment**
+- Linux (WSL2 / Ubuntu)
+>>>>>>> 50076f804956f8284534b2bc5e09e00bde0af542
 
 ### v2 – WebSocket (Real-Time)
 
+<<<<<<< HEAD
 ```
 Browser
    ⇄ WebSocket (persistent connection)
@@ -208,3 +243,40 @@ Further versions would focus on persistence, visualization, or multi-node monito
 ---
 
 **Note:** This is a learning project designed to demonstrate fundamental concepts in system monitoring and real-time web applications.
+=======
+| Endpoint         | Description                     |
+|-----------------|---------------------------------|
+| `/api/cpu`       | CPU usage (%)                  |
+| `/api/memory`    | Memory usage (MB, %)           |
+| `/api/disk`      | Disk usage (GB, %)             |
+| `/api/processes` | Top processes by CPU usage     |
+
+## Architecture
+```bash
+Browser (JS Dashboard)
+↓ HTTP (Polling)
+FastAPI Backend (REST API)
+↓
+psutil
+↓
+System Metrics (OS)
+```
+
+## Setup
+
+```bash
+# Clone repo
+git clone <your-repo-url>
+cd system-monitoring-dashboard
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install fastapi uvicorn psutil
+
+# Run server
+uvicorn main:app --reload
+```
+>>>>>>> 50076f804956f8284534b2bc5e09e00bde0af542
