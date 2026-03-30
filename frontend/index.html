@@ -2,476 +2,153 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>System Monitor Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --border: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --primary: #3b82f6;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --warning: #f59e0b;
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    main {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      min-height: calc(100vh - 57px);
-    }
-
-    aside {
-      border-right: 1px solid var(--border);
-      padding: 16px;
-    }
-
-    aside button {
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 8px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--text);
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-
-    aside button:hover {
-      background: var(--border);
-    }
-
-    aside button:active {
-      transform: scale(0.98);
-    }
-
-    section {
-      padding: 24px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: 6px;
-    }
-
-    .value {
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .full {
-      grid-column: 1 / -1;
-    }
-
-    svg {
-      width: 100%;
-      height: 120px;
-      background: #020617;
-      border-radius: 4px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-
-    th {
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-
-    .status {
-      font-weight: 600;
-    }
-
-    .connected { color: var(--success); }
-    .disconnected { color: var(--danger); }
-    
-    .section-divider {
-      margin: 12px 0 8px 0;
-      padding-top: 8px;
-      border-top: 1px solid var(--border);
-    }
-  </style>
+  <title>SysMon — System Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
-<header>System Monitoring Dashboard</header>
 
-<main>
-  <!-- ADMIN PANEL -->
-  <aside>
-    <div class="muted">Admin Panel</div>
-    <p>Status: <span id="ws-status" class="status disconnected">Disconnected</span></p>
-
-    <button onclick="togglePause()">
-      <span id="pause-text">⏸ Pause Updates</span>
-    </button>
-    <button onclick="toggleView('dashboard')">📊 Dashboard</button>
-    <button onclick="toggleView('logs')">📋 System Logs</button>
-
-    <div class="section-divider"></div>
-    <div class="muted">Chart Window</div>
-    <button onclick="setWindowSize(30)">30 points</button>
-    <button onclick="setWindowSize(60)">60 points</button>
-    <button onclick="setWindowSize(120)">120 points</button>
-
-    <div class="section-divider"></div>
-    <div class="muted">Smoothing</div>
-    <button onclick="setSmoothing(1)">None</button>
-    <button onclick="setSmoothing(3)">Low</button>
-    <button onclick="setSmoothing(5)">Medium</button>
-    <button onclick="setSmoothing(10)">High</button>
-
-    <p class="muted" style="margin-top: 16px;">Window: <span id="current-window">60</span> | Smooth: <span id="current-smooth">5</span></p>
-  </aside>
-
-  <!-- DASHBOARD -->
-  <section id="dashboard-view">
-    <!-- METRICS -->
-    <div class="card">
-      <div class="muted">CPU Usage</div>
-      <div id="cpu" class="value">--%</div>
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header__brand">
+      <span class="header__logo">⬡</span>
+      <span class="header__title">SYSMON</span>
+      <span class="header__subtitle">/ system dashboard</span>
     </div>
-
-    <div class="card">
-      <div class="muted">Memory Usage</div>
-      <div id="memory" class="value">--%</div>
+    <div class="header__status">
+      <span id="connection-dot" class="status-dot status-dot--connecting"></span>
+      <span id="connection-label" class="status-label">CONNECTING</span>
+      <span id="last-update" class="status-timestamp">--:--:--</span>
     </div>
+  </header>
 
-    <div class="card">
-      <div class="muted">Disk Usage</div>
-      <div id="disk" class="value">--%</div>
-    </div>
+  <!-- ═══════════════════════════════════════════
+       MAIN GRID
+  ═══════════════════════════════════════════ -->
+  <main class="dashboard">
 
-    <!-- CHARTS -->
-    <div class="card full">
-      <div class="muted">CPU Usage (Live)</div>
-      <svg id="cpu-chart"></svg>
-    </div>
+    <!-- ── ROW 1: Metric Cards ── -->
+    <section class="metrics-row">
 
-    <div class="card full">
-      <div class="muted">Memory Usage (Live)</div>
-      <svg id="memory-chart"></svg>
-    </div>
-
-    <!-- PROCESSES -->
-    <div class="card full">
-      <div class="muted">Top Processes</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>PID</th>
-            <th>CPU %</th>
-            <th>Memory %</th>
-          </tr>
-        </thead>
-        <tbody id="processes">
-          <tr><td colspan="4" style="text-align:center;color:var(--muted);">Waiting for data...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- LOGS VIEW -->
-  <section id="logs-view" style="display:none;">
-    <div class="card full">
-      <div class="muted">Live System Logs</div>
-      <div
-        id="logs"
-        style="
-          margin-top:8px;
-          height:600px;
-          overflow-y:auto;
-          font-family: monospace;
-          font-size:12px;
-          background:#020617;
-          padding:8px;
-          border-radius:4px;
-        ">
-        <div style="color:var(--muted);">Waiting for log entries...</div>
+      <div class="card metric-card" id="card-cpu">
+        <div class="card__label">CPU USAGE</div>
+        <div class="card__value" id="cpu-value">--%</div>
+        <div class="card__bar">
+          <div class="bar-track">
+            <div class="bar-fill bar-fill--cpu" id="cpu-bar"></div>
+          </div>
+        </div>
+        <div class="card__meta" id="cpu-meta">-- cores · -- GHz</div>
       </div>
-    </div>
-  </section>
 
-</main>
+      <div class="card metric-card" id="card-mem">
+        <div class="card__label">MEMORY</div>
+        <div class="card__value" id="mem-value">--%</div>
+        <div class="card__bar">
+          <div class="bar-track">
+            <div class="bar-fill bar-fill--mem" id="mem-bar"></div>
+          </div>
+        </div>
+        <div class="card__meta" id="mem-meta">-- GB used / -- GB total</div>
+      </div>
 
-<script>
-/* ------------------ GLOBAL STATE ------------------ */
+      <div class="card metric-card" id="card-disk">
+        <div class="card__label">DISK</div>
+        <div class="card__value" id="disk-value">--%</div>
+        <div class="card__bar">
+          <div class="bar-track">
+            <div class="bar-fill bar-fill--disk" id="disk-bar"></div>
+          </div>
+        </div>
+        <div class="card__meta" id="disk-meta">-- GB used / -- GB total</div>
+      </div>
 
-const state = {
-  ws: null,
-  connected: false,
-  paused: false,
-  metrics: null,
-  windowSize: 60,
-  smoothing: 5, 
-  history: {
-    cpu: [],
-    memory: []
-  },
-  logs: [],
-  maxLogs: 200,
-  currentView: 'dashboard'
-};
+      <div class="card metric-card" id="card-net">
+        <div class="card__label">NETWORK</div>
+        <div class="card__value" id="net-value">-- KB/s</div>
+        <div class="card__bar">
+          <div class="bar-track">
+            <div class="bar-fill bar-fill--net" id="net-bar"></div>
+          </div>
+        </div>
+        <div class="card__meta" id="net-meta">↑ -- KB/s · ↓ -- KB/s</div>
+      </div>
 
+    </section>
 
-/* ------------------ WEBSOCKET ------------------ */
+    <!-- ── ROW 2: Charts ── -->
+    <section class="charts-row">
 
-function connectWS() {
-  // Close existing connection if any
-  if (state.ws) {
-    state.ws.close();
-    state.ws = null;
-  }
+      <div class="card chart-card">
+        <div class="card__header">
+          <span class="card__label">CPU HISTORY</span>
+          <span class="chart__legend">
+            <span class="legend-dot legend-dot--cpu"></span>60s window
+          </span>
+        </div>
+        <div class="chart-container">
+          <svg id="chart-cpu" class="chart-svg" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
 
-  state.ws = new WebSocket("ws://127.0.0.1:8000/api/ws/metrics");
+      <div class="card chart-card">
+        <div class="card__header">
+          <span class="card__label">MEMORY HISTORY</span>
+          <span class="chart__legend">
+            <span class="legend-dot legend-dot--mem"></span>60s window
+          </span>
+        </div>
+        <div class="chart-container">
+          <svg id="chart-mem" class="chart-svg" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
 
-  state.ws.onopen = () => {
-    state.connected = true;
-    updateStatus();
-    addLog("INFO", "WebSocket connected");
-  };
+    </section>
 
-  state.ws.onmessage = (e) => {
-    if (state.paused) return;
-    
-    const data = JSON.parse(e.data);
-    addLog("DATA", `CPU ${data.cpu}% | MEM ${data.memory}% | DISK ${data.disk}%`);
+    <!-- ── ROW 3: Processes + Logs ── -->
+    <section class="bottom-row">
 
-    if (data.cpu > 80) {
-      addLog("WARN", `High CPU usage detected (${data.cpu}%)`);
-    }
+      <div class="card process-card">
+        <div class="card__header">
+          <span class="card__label">TOP PROCESSES</span>
+          <span class="card__meta" id="proc-count">-- running</span>
+        </div>
+        <table class="proc-table">
+          <thead>
+            <tr>
+              <th>PID</th>
+              <th>NAME</th>
+              <th>CPU%</th>
+              <th>MEM%</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="proc-table-body">
+            <tr><td colspan="5" class="proc-empty">Awaiting data…</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-    state.metrics = data;
-    pushHistory("cpu", data.cpu);
-    pushHistory("memory", data.memory);
-    render();
-  };
+      <div class="card log-card">
+        <div class="card__header">
+          <span class="card__label">SYSTEM LOGS</span>
+          <div class="log-controls">
+            <button class="log-btn" id="log-clear">CLEAR</button>
+            <button class="log-btn log-btn--active" id="log-scroll">AUTO↓</button>
+          </div>
+        </div>
+        <div class="log-panel" id="log-panel"></div>
+      </div>
 
-  state.ws.onerror = (error) => {
-    addLog("ERROR", "WebSocket error occurred");
-  };
+    </section>
 
-  state.ws.onclose = () => {
-    state.connected = false;
-    updateStatus();
-    addLog("ERROR", "WebSocket disconnected, retrying in 3s...");
-    setTimeout(connectWS, 3000);
-  };
-}
+  </main>
 
-/* ------------------ STATE HELPERS ------------------ */
-
-function pushHistory(key, value) {
-  const arr = state.history[key];
-  arr.push(value);
-  if (arr.length > state.windowSize) arr.shift();
-}
-
-function addLog(level, message) {
-  const time = new Date().toLocaleTimeString();
-  state.logs.push({ time, level, message });
-
-  if (state.logs.length > state.maxLogs) {
-    state.logs.shift();
-  }
-
-  renderLogs();
-}
-
-/* ------------------ RENDERING ------------------ */
-
-function smooth(data, window = 5) {
-  if (window <= 1 || data.length < window) return data;
-
-  const result = [];
-  for (let i = 0; i < data.length; i++) {
-    const start = Math.max(0, i - window + 1);
-    const subset = data.slice(start, i + 1);
-    const avg = subset.reduce((a, b) => a + b, 0) / subset.length;
-    result.push(avg);
-  }
-
-  return result;
-}
-
-function render() {
-  renderMetrics();
-  renderChart("cpu-chart", smooth(state.history.cpu, state.smoothing), 100);
-  renderChart("memory-chart", smooth(state.history.memory, state.smoothing), 100);
-  renderProcesses();
-}
-
-function renderMetrics() {
-  if (!state.metrics) return;
-
-  document.getElementById("cpu").innerText = state.metrics.cpu + "%";
-  document.getElementById("memory").innerText = state.metrics.memory + "%";
-  document.getElementById("disk").innerText = state.metrics.disk + "%";
-}
-
-function renderProcesses() {
-  if (!state.metrics || !state.metrics.processes) return;
-  
-  const tbody = document.getElementById("processes");
-  tbody.innerHTML = "";
-
-  if (state.metrics.processes.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">No processes</td></tr>';
-    return;
-  }
-
-  state.metrics.processes.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.name || 'N/A'}</td>
-      <td>${p.pid || 'N/A'}</td>
-      <td>${p.cpu || '0'}</td>
-      <td>${p.memory || '0'}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-/* ------------------ CHARTS (SVG) ------------------ */
-
-function renderChart(id, data, max) {
-  const svg = document.getElementById(id);
-  if (!svg || data.length < 2) return;
-
-  const w = 300;
-  const h = 120;
-
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - (Math.min(v, max) / max) * h;
-    return `${x},${y}`;
-  }).join(" ");
-
-  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  svg.innerHTML = `
-    <polyline
-      fill="none"
-      stroke="${getComputedStyle(document.documentElement).getPropertyValue('--primary')}"
-      stroke-width="2"
-      points="${points}"
-    />
-  `;
-}
-
-function renderLogs() {
-  const container = document.getElementById("logs");
-  if (!container) return;
-
-  if (state.logs.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);">Waiting for log entries...</div>';
-    return;
-  }
-
-  container.innerHTML = state.logs.map(l => {
-    const color =
-      l.level === "ERROR" ? "#ef4444" :
-      l.level === "WARN"  ? "#f59e0b" :
-      l.level === "INFO"  ? "#22c55e" :
-      "#9ca3af";
-
-    return `<div style="color:${color}">
-      [${l.time}] ${l.level.padEnd(5)} ${l.message}
-    </div>`;
-  }).join("");
-
-  container.scrollTop = container.scrollHeight;
-}
-
-
-/* ------------------ ADMIN CONTROLS ------------------ */
-
-function togglePause() {
-  state.paused = !state.paused;
-  const pauseText = document.getElementById("pause-text");
-  pauseText.innerText = state.paused ? "▶ Resume Updates" : "⏸ Pause Updates";
-  addLog("INFO", state.paused ? "Updates paused" : "Updates resumed");
-}
-
-function setWindowSize(n) {
-  state.windowSize = n;
-  Object.keys(state.history).forEach(k => {
-    state.history[k] = state.history[k].slice(-n);
-  });
-  document.getElementById("current-window").innerText = n;
-  addLog("INFO", `Chart window set to ${n} points`);
-  render();
-}
-
-function updateStatus() {
-  const el = document.getElementById("ws-status");
-  el.innerText = state.connected ? "Connected" : "Disconnected";
-  el.className = "status " + (state.connected ? "connected" : "disconnected");
-}
-
-function setSmoothing(n) {
-  state.smoothing = n;
-  document.getElementById("current-smooth").innerText = n;
-  addLog("INFO", `Smoothing set to ${n}`);
-  render();
-}
-
-function toggleView(view) {
-  state.currentView = view;
-  const dashboardView = document.getElementById("dashboard-view");
-  const logsView = document.getElementById("logs-view");
-  
-  if (view === 'dashboard') {
-    dashboardView.style.display = "grid";
-    logsView.style.display = "none";
-  } else if (view === 'logs') {
-    dashboardView.style.display = "none";
-    logsView.style.display = "grid";
-  }
-}
-
-// Initialize
-connectWS();
-
-</script>
+  <!-- ES module entry point -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

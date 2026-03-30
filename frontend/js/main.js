@@ -1,31 +1,40 @@
-function connectWS() {
-    const ws = new WebSocket("ws://127.0.0.1:8000/api/ws/metrics");
+/**
+ * main.js — Application entry point.
+ *
+ * Wires modules together. Does not contain business logic.
+ *
+ * Boot sequence:
+ *   1. Initialize charts (insert static SVG structure)
+ *   2. Subscribe render.js and charts.js to state notifications
+ *   3. Open WebSocket connection via ws.js
+ *
+ * Data flow (after boot):
+ *   WebSocket message
+ *     → ws.js parses JSON
+ *       → state.update() mutates state + notifies subscribers
+ *         → render.js updates DOM cards / table
+ *         → charts.js redraws SVG paths
+ *         → logs.js (called directly by ws.js for system messages)
+ */
 
-    ws.onopen = () => console.log("WS connected");
+import * as state  from './state.js';
+import * as ws     from './ws.js';
+import { render }  from './render.js';
+import { initCharts, renderCharts } from './charts.js';
+import { addLog }  from './logs.js';
 
-    ws.onmessage = (e) => {
-        const data = JSON.parse(e.data);
+// 1. Prepare charts (static SVG structure must exist before first data arrives)
+initCharts();
 
-        document.getElementById("cpu").innerText = data.cpu + "%";
-        document.getElementById("memory").innerText = data.memory + "% used";
-        document.getElementById("disk").innerText = data.disk + "% used";
+// 2. Subscribe both rendering systems to state changes
+//    Both receive the same snapshot object on each update.
+state.subscribe(snapshot => {
+  render(snapshot);
+  renderCharts(snapshot);
+});
 
-        const list = document.getElementById("processes");
-        list.innerHTML = "";
-        data.processes.forEach(p => {
-            const li = document.createElement("li");
-            li.innerText = `${p.name} (CPU: ${p.cpu}%)`;
-            list.appendChild(li);
-        });
-    };
+// 3. Open WebSocket — all further updates are event-driven
+ws.connect();
 
-    ws.onclose = () => {
-        console.log("WS closed, reconnecting...");
-        setTimeout(connectWS, 1000);
-    };
-
-    ws.onerror = () => ws.close();
-}
-
-connectWS();
-
+// Startup log
+addLog('INFO', 'SysMon dashboard initialised');
