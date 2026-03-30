@@ -10,8 +10,6 @@ logging.basicConfig(
 
 app = FastAPI(title="System Health Dashboard")
 
-app.include_router(metrics.router, prefix="/api")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,3 +17,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(metrics.router, prefix="/api")

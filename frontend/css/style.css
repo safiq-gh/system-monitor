@@ -5,6 +5,7 @@ body {
 
 #metrics {
     display: flex;
+    
     gap: 20px;
 }
 

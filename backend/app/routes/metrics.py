@@ -19,10 +19,6 @@ def cpu():
     logger.info("CPU metrics requested")
     return {"cpu_percent": get_cpu_usage()}
 
-@router.get("/cpu")
-def cpu():
-    return {"cpu_percent": get_cpu_usage()}
-
 @router.get("/memory")
 def memory():
     return get_memory_usage()
