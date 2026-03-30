@@ -1,6 +1,8 @@
 # System Monitoring Dashboard
 
-A lightweight full-stack application for monitoring real-time system metrics using a FastAPI backend and a minimal JavaScript frontend.
+> A lightweight full-stack application for monitoring real-time system metrics using a FastAPI backend and a minimal JavaScript frontend.
+
+![Dashboard](assets/SysMon.png)
 
 ## Overview
 
