@@ -188,3 +188,45 @@ function statusLabel(s) {
   if (!s) return 'RUNNING';
   return s.toUpperCase();
 }
+
+export function renderAgents(agents) {
+  const container = document.getElementById("agents");
+  const countEl = document.getElementById("agents-count");
+
+  const list = Object.values(agents);
+
+  countEl.textContent = `${list.length} nodes`;
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="agents-empty">No agents connected…</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  list.forEach(a => {
+    const el = document.createElement("div");
+    el.className = "agent-item";
+
+    el.innerHTML = `
+      <div class="agent-item__title">${a.host}</div>
+
+      <div class="agent-item__metric">
+        <span>CPU</span>
+        <span class="${a.cpu > 80 ? 'agent-high' : ''}">${a.cpu}%</span>
+      </div>
+
+      <div class="agent-item__metric">
+        <span>MEM</span>
+        <span>${a.memory}%</span>
+      </div>
+
+      <div class="agent-item__metric">
+        <span>DISK</span>
+        <span>${a.disk}%</span>
+      </div>
+    `;
+
+    container.appendChild(el);
+  });
+}

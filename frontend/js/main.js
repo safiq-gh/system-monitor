@@ -20,6 +20,7 @@
 import * as state  from './state.js';
 import * as ws     from './ws.js';
 import { render }  from './render.js';
+import { renderAgents } from "./render.js";
 import { initCharts, renderCharts } from './charts.js';
 import { addLog }  from './logs.js';
 
@@ -38,3 +39,20 @@ ws.connect();
 
 // Startup log
 addLog('INFO', 'SysMon dashboard initialised');
+
+// -------- FAST MULTI-MACHINE POLLING --------
+
+async function fetchAgents() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/agents");
+    const data = await res.json();
+
+    renderAgents(data);
+
+  } catch (err) {
+    addLog('ERROR', 'Failed to fetch agents');
+  }
+}
+
+// Poll every 2 seconds
+setInterval(fetchAgents, 2000);

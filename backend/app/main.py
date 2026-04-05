@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.routes import metrics
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+from datetime import datetime
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,3 +19,16 @@ app.add_middleware(
 )
 
 app.include_router(metrics.router, prefix="/api")
+
+agents = {}
+
+@app.post("/ingest")
+def ingest(data: dict):
+    host = data.get("host")
+    agents[host] = data
+    return {"status": "ok"}
+
+
+@app.get("/agents")
+def get_agents():
+    return agents

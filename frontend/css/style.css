@@ -561,3 +561,51 @@ html, body {
   .card__value { font-size: 26px; }
   .header__subtitle { display: none; }
 }
+
+/* ───────── AGENTS SECTION ───────── */
+
+.agents-row {
+  margin-top: 16px;
+}
+
+.agents-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agents-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.agent-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+}
+
+.agent-item__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #8ab4ff;
+}
+
+.agent-item__metric {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 0;
+}
+
+.agent-high {
+  color: #ff6b6b;
+}
+
+.agents-empty {
+  opacity: 0.5;
+  font-size: 12px;
+}

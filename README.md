@@ -1,186 +1,133 @@
 # System Monitoring Dashboard
 
-> A lightweight full-stack application for monitoring real-time system metrics using a FastAPI backend and a minimal JavaScript frontend.
+A full-stack system monitoring application that tracks real-time metrics across one or more machines. Built with FastAPI and vanilla JavaScript.
 
 ![Dashboard](assets/SysMon.png)
 
-## Overview
+## What This Is
 
-This project demonstrates two progressively improved architectures for collecting and displaying system resource metrics:
+A progressively complex project that went from a simple REST polling setup to a distributed monitoring system with WebSocket support.
 
-- **v1 – Foundation:** REST API with HTTP polling
-- **v2 – Real-Time:** WebSocket-based real-time streaming
+**Three versions:**
+- **v1** – Basic REST API with HTTP polling
+- **v2** – WebSocket for real-time updates
+- **v3** – Multi-machine monitoring with lightweight agents
 
-The application exposes system-level metrics such as CPU, memory, disk usage, and active processes through APIs, and visualizes them via a browser-based dashboard.
+Shows CPU, memory, disk, and process info in a live dashboard.
 
 ## Features
 
 - Real-time system metrics (CPU, memory, disk, processes)
-- REST API built with FastAPI
-- Structured JSON responses
-- HTTP polling (5s interval) for live updates
-- WebSocket support for event-driven real-time updates (v2)
-- Lightweight frontend using vanilla JavaScript
-- Basic error handling for API failures
+- Multi-machine support via agent-based collection
+- WebSocket streaming for live updates
+- REST API for metric queries
+- Threshold-based alerting
+- Custom SVG charts
+- Simple logs panel
 
 ## Tech Stack
 
-**Backend**
-- Python 3.10+
-- FastAPI
-- psutil
-- Uvicorn
+**Backend:** Python 3.10+, FastAPI, psutil, Uvicorn
 
-**Frontend**
-- HTML5
-- CSS3
-- Vanilla JavaScript (ES6+)
-- WebSocket API
+**Frontend:** HTML5, CSS3, vanilla JavaScript, WebSocket API
 
-**Environment**
-- Linux (WSL2 / Ubuntu 22.04)
+**Environment:** Linux / WSL2
 
 ## Architecture
 
-### v1 – REST + Polling
-
+### v1 – HTTP Polling
 ```
-Browser
-  │
-  │ HTTP GET (every 5s)
-  ▼
-FastAPI REST API
-  │
-  ▼
-Operating System Metrics (psutil)
+Browser → [HTTP GET polling] → FastAPI → psutil
 ```
 
-### v2 – WebSocket (Real-Time)
-
+### v2 – WebSocket
 ```
-Browser
-  ⇄ WebSocket (persistent connection)
-FastAPI WebSocket Endpoint
-  │
-  ▼
-Operating System Metrics (psutil)
+Browser ⇄ [WebSocket] ⇄ FastAPI → psutil
 ```
 
-## API Reference
-
-### v1 REST Endpoints
-
-| Endpoint         | Method | Description                    |
-|------------------|--------|--------------------------------|
-| `/api/cpu`       | GET    | CPU usage percentage           |
-| `/api/memory`    | GET    | Memory usage statistics        |
-| `/api/disk`      | GET    | Disk usage statistics          |
-| `/api/processes` | GET    | Top CPU-consuming processes    |
-
-### v2 WebSocket Endpoint
-
-| Endpoint          | Description                               |
-|-------------------|-------------------------------------------|
-| `/api/ws/metrics` | Streams live system metrics as JSON       |
-
-**Sample Payload:**
-
-```json
-{
-  "cpu": 27.3,
-  "memory": 62.1,
-  "disk": 44.8,
-  "processes": [
-    { "pid": 1234, "name": "python", "cpu": 12.3, "memory": 4.1 }
-  ]
-}
+### v3 – Distributed Agents
+```
+Machine 1 Agent ─┐
+Machine 2 Agent ├──→ FastAPI Server → Dashboard
+Machine N Agent ─┘
 ```
 
-## Installation
+Agents run on each monitored machine and POST metrics to a central server.
 
-### Prerequisites
+## API
 
-- Python 3.10+
-- pip
-- Linux environment (WSL2 or native)
+### Endpoints
+- `GET /api/cpu` – CPU usage
+- `GET /api/memory` – Memory usage
+- `GET /api/disk` – Disk usage
+- `GET /api/processes` – Top processes by resource use
+- `GET /agents` – List connected machines
+- `POST /ingest` – Agents submit metrics here
+- `WS /api/ws/metrics` – Real-time metric stream
 
-### Setup Instructions
+## Setup
 
-1. Clone the repository:
+**Requirements:** Python 3.10+, pip
 
 ```bash
-git clone <repository-url>
-cd system-monitoring-dashboard
-```
-
-2. Create and activate virtual environment:
-
-```bash
+git clone <repo>
+cd system-monitor
 python -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-3. Install dependencies:
+## Running It
 
-```bash
-pip install -r backend/requirements.txt
-```
-
-## Running the Application
-
-1. Start the backend:
-
+**Backend:**
 ```bash
 cd backend
-python -m uvicorn app.main:app --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-2. Start the frontend (open a new terminal):
-
+**Frontend:**
 ```bash
 cd frontend
 python -m http.server 5500
 ```
 
-3. Open in browser:
+Then open `http://localhost:5500`
 
+## Multi-Machine Setup
+
+On each remote machine:
+
+```bash
+pip install psutil requests
 ```
-http://localhost:5500
+
+Edit `agent.py` and set:
+```python
+SERVER = "http://your-server-ip:8000/ingest"
 ```
 
-## Design Decisions
+Run it:
+```bash
+python agent.py
+```
 
-- **REST to WebSocket Progression:** v1 uses HTTP polling for simplicity; v2 replaces it with WebSockets for real-time, event-driven architecture
-- **No Frontend Frameworks:** Raw DOM manipulation and WebSocket handling to emphasize fundamental concepts
-- **No Persistence:** Real-time metrics only; no database layer
-- **Defensive System Programming:** Handles restricted and short-lived OS processes; avoids blocking the async event loop
+## Design Notes
 
-## Known Limitations
+Started with polling to keep things simple. Switched to WebSockets for cleaner real-time updates. Added agents to handle multiple machines without overcomplicating the core server.
 
-- Single-machine monitoring only
-- No historical data or trend analysis
-- No authentication or access control
-- Development server only
-- Metrics reflect the Linux environment, not bare-metal Windows
-- Browser may close idle WebSocket connections (handled via reconnection logic)
+No persistence layer—this is monitoring, not archiving. Each machine reports independently. No auth yet (dev only).
 
-## Project Status
+## Limitations
 
-- v1 – Foundation: Complete and tagged
-- v2 – Real-Time: Complete and tagged
+- No authentication
+- No persistent storage
+- Dev server only
+- Single-network deployment
+- Basic alerting (threshold checks)
 
-## Learning Outcomes
+## Status
 
-This project demonstrates:
+- v1 – Done
+- v2 – Done
+- v3 – Working
 
-- REST API design with FastAPI
-- System metric collection using psutil
-- Client–server communication patterns
-- Polling vs. event-driven architectures
-- Asynchronous programming in Python
-- WebSocket lifecycle handling
-- Clean project structure and versioned scope control
-
----
-
-**Note:** This is a learning project designed to demonstrate fundamental concepts in system monitoring and real-time web applications.
