@@ -70,7 +70,7 @@ Agents run on each monitored machine and POST metrics to a central server.
 **Requirements:** Python 3.10+, pip
 
 ```bash
-git clone <repo>
+git clone https://github.com/safiq-gh/system-monitor.git
 cd system-monitor
 python -m venv .venv
 source .venv/bin/activate
