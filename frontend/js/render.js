@@ -191,42 +191,43 @@ function statusLabel(s) {
 
 export function renderAgents(agents) {
   const container = document.getElementById("agents");
-  const countEl = document.getElementById("agents-count");
-
-  const list = Object.values(agents);
-
-  countEl.textContent = `${list.length} nodes`;
-
-  if (list.length === 0) {
-    container.innerHTML = `<div class="agents-empty">No agents connected…</div>`;
+  if (!container) {
+    console.error("[renderAgents] #agents not found");
     return;
   }
 
+  const list = Object.values(agents || {});
+
   container.innerHTML = "";
 
+  if (list.length === 0) {
+    container.innerHTML = '<div class="agents-empty">No agents connected…</div>';
+    return;
+  }
+
   list.forEach(a => {
-    const el = document.createElement("div");
-    el.className = "agent-item";
+    const div = document.createElement("div");
+    div.className = "agent-item";                    // ← was "agent-card", must be "agent-item"
 
-    el.innerHTML = `
-      <div class="agent-item__title">${a.host}</div>
+    const cpuHigh  = a.cpu    > 80 ? "agent-high" : "";
+    const memHigh  = a.memory > 80 ? "agent-high" : "";
+    const diskHigh = a.disk   > 90 ? "agent-high" : "";
 
+    div.innerHTML = `
+      <div class="agent-item__title">${a.host ?? "unknown"}</div>
       <div class="agent-item__metric">
         <span>CPU</span>
-        <span class="${a.cpu > 80 ? 'agent-high' : ''}">${a.cpu}%</span>
+        <span class="${cpuHigh}">${a.cpu ?? "--"}%</span>
       </div>
-
       <div class="agent-item__metric">
         <span>MEM</span>
-        <span>${a.memory}%</span>
+        <span class="${memHigh}">${a.memory ?? "--"}%</span>
       </div>
-
       <div class="agent-item__metric">
         <span>DISK</span>
-        <span>${a.disk}%</span>
+        <span class="${diskHigh}">${a.disk ?? "--"}%</span>
       </div>
     `;
-
-    container.appendChild(el);
+    container.appendChild(div);
   });
 }

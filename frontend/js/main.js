@@ -40,19 +40,23 @@ ws.connect();
 // Startup log
 addLog('INFO', 'SysMon dashboard initialised');
 
-// -------- FAST MULTI-MACHINE POLLING --------
-
 async function fetchAgents() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/agents");
+    const res = await fetch("https://isabell-guarded-unpalatally.ngrok-free.dev/agents", {
+      headers: { "ngrok-skip-browser-warning": "true" }  // <-- critical for ngrok
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-
+    console.log("[fetchAgents] data:", data);
     renderAgents(data);
-
   } catch (err) {
-    addLog('ERROR', 'Failed to fetch agents');
+    console.error("[fetchAgents] failed:", err);
   }
 }
 
-// Poll every 2 seconds
-setInterval(fetchAgents, 2000);
+// Wait for DOM before polling — not needed for <script type="module"> (deferred by default)
+// but harmless and explicit
+document.addEventListener("DOMContentLoaded", () => {
+  fetchAgents();                      // immediate first call, don't wait 2s
+  setInterval(fetchAgents, 2000);
+});
