@@ -24,7 +24,7 @@ app.include_router(metrics.router, prefix="/api")
 # The TTL threshold in seconds (how long before an agent is considered "dead")
 AGENT_TIMEOUT = 2 
 
-@app.post("/ingest")
+@app.post("/api/ingest")
 def ingest(data: dict):
     host = data.get("host")
     if not host:
@@ -36,7 +36,7 @@ def ingest(data: dict):
     
     return {"status": "ok"}
 
-@app.get("/agents")
+@app.get("/api/agents")
 def get_agents():
     current_time = time.time()
     

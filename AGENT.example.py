@@ -20,7 +20,7 @@ SERVER_URL = os.getenv("SERVER_URL", "http://localhost:8000/ingest")
 if not SERVER_URL:
     raise ValueError("SERVER_URL is not set")
 
-POLL_INTERVAL   = float(os.getenv("POLL_INTERVAL", "2.0"))   # seconds between sends
+POLL_INTERVAL   = float(os.getenv("POLL_INTERVAL", "0.2"))   # seconds between sends
 BACKOFF_BASE    = 1.0    # initial retry delay (seconds)
 BACKOFF_MAX     = 30.0   # cap on retry delay
 BACKOFF_FACTOR  = 2.0    # multiplier per failure
@@ -43,7 +43,7 @@ _retry_delay = BACKOFF_BASE   # current backoff delay; reset on success
 def _shutdown(sig, frame):
     """Send a disconnect signal then exit cleanly."""
     print("\n👋 Shutting down — notifying server…")
-    disconnect_url = SERVER_URL.replace("/ingest", "/disconnect")
+    disconnect_url = SERVER_URL.replace("/api/ingest", "/api/disconnect")
     try:
         requests.post(
             disconnect_url,
@@ -127,3 +127,4 @@ while True:
         print(f"❌ Connection failed ({exc.__class__.__name__}). Retrying in {_retry_delay:.0f}s…")
         time.sleep(_retry_delay)
         _retry_delay = min(_retry_delay * BACKOFF_FACTOR, BACKOFF_MAX)
+

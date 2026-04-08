@@ -46,7 +46,7 @@ let knownAgents = new Set();
 async function fetchAgents() {
   try {
     // Replace with your static ngrok or local IP
-    const res = await fetch("https://isabell-guarded-unpalatally.ngrok-free.dev/agents", {
+    const res = await fetch("https://resulted-buffalo-arrival-donation.trycloudflare.com/agents", {
       headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } 
     });
     
