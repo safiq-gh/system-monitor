@@ -40,16 +40,43 @@ ws.connect();
 // Startup log
 addLog('INFO', 'SysMon dashboard initialised');
 
+// Keep track of who is currently online
+let knownAgents = new Set();
+
 async function fetchAgents() {
   try {
+    // Replace with your static ngrok or local IP
     const res = await fetch("https://isabell-guarded-unpalatally.ngrok-free.dev/agents", {
-      headers: { "ngrok-skip-browser-warning": "true" }  // <-- critical for ngrok
+      headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } 
     });
+    
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    console.log("[fetchAgents] data:", data);
+    
+    // --- 🚨 Smart Agent Tracking ---
+    const currentAgents = new Set(Object.keys(data));
+    
+    // Check for dropped agents
+    for (const agent of knownAgents) {
+      if (!currentAgents.has(agent)) {
+        addLog('WARN', `Agent connection lost: ${agent}`);
+      }
+    }
+    
+    // Check for new agents
+    for (const agent of currentAgents) {
+      if (!knownAgents.has(agent)) {
+        addLog('INFO', `New agent connected: ${agent}`);
+      }
+    }
+    
+    // Update our tracker
+    knownAgents = currentAgents;
+    // ------------------------------
+
     renderAgents(data);
   } catch (err) {
+    // Don't spam the log panel if the server is restarting, just use console
     console.error("[fetchAgents] failed:", err);
   }
 }

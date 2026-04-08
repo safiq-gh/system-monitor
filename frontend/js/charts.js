@@ -11,22 +11,11 @@
 // SVG namespace constant
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Chart configuration per series
 const CHART_CONFIG = {
-  cpu: {
-    svgId:      'chart-cpu',
-    color:      '#00d4ff',
-    fillStart:  'rgba(0,212,255,0.25)',
-    fillEnd:    'rgba(0,212,255,0.0)',
-    gradId:     'grad-cpu',
-  },
-  memory: {
-    svgId:      'chart-mem',
-    color:      '#7c6fff',
-    fillStart:  'rgba(124,111,255,0.25)',
-    fillEnd:    'rgba(124,111,255,0.0)',
-    gradId:     'grad-mem',
-  },
+  cpu:    { svgId: 'chart-cpu',  color: 'var(--cpu)',  gradId: 'grad-cpu' },
+  memory: { svgId: 'chart-mem',  color: 'var(--mem)',  gradId: 'grad-mem' },
+  disk:   { svgId: 'chart-disk', color: 'var(--disk)', gradId: 'grad-disk' },
+  net:    { svgId: 'chart-net',  color: 'var(--net)',  gradId: 'grad-net' }
 };
 
 // Grid lines at these % levels
@@ -121,6 +110,14 @@ export function initCharts() {
 export function renderCharts(snapshot) {
   _drawChart('cpu',    snapshot.history.cpu);
   _drawChart('memory', snapshot.history.memory);
+  _drawChart('disk',   snapshot.history.disk);
+  _drawChart('net',    snapshot.history.net);
+  if (window.__updateChartStats) window.__updateChartStats(
+	  snapshot.history.cpu, 
+	  snapshot.history.memory,
+	  snapshot.history.disk,
+          snapshot.history.net
+  );
 }
 
 // ── Internal ──

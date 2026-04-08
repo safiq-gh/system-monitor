@@ -14,4 +14,7 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
-agent.py
+
+.env
+AGENT.py
+

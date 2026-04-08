@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from app.routes import metrics
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from datetime import datetime
-
+import time # <-- New import needed for TTL
+from app.state import agents
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -21,15 +21,41 @@ app.add_middleware(
 
 app.include_router(metrics.router, prefix="/api")
 
-agents = {}
+# The TTL threshold in seconds (how long before an agent is considered "dead")
+AGENT_TIMEOUT = 2 
 
 @app.post("/ingest")
 def ingest(data: dict):
     host = data.get("host")
+    if not host:
+        return {"error": "No host identifier provided"}, 400
+        
+    # Inject the server-side timestamp
+    data["last_seen"] = time.time()
     agents[host] = data
+    
     return {"status": "ok"}
-
 
 @app.get("/agents")
 def get_agents():
-    return agents
+    current_time = time.time()
+    
+    # Dictionary comprehension to filter out dead agents
+    active_agents = {
+        host: data for host, data in agents.items() 
+        if current_time - data.get("last_seen", 0) < AGENT_TIMEOUT
+    }
+    
+    # Optional: Clean up the actual dictionary so it doesn't grow indefinitely over months
+    keys_to_delete = [h for h in agents.keys() if h not in active_agents]
+    for k in keys_to_delete:
+        del agents[k]
+        
+    return active_agents
+
+@app.post("/disconnect")
+def disconnect_agent(data: dict):
+    host = data.get("host")
+    if host in agents:
+        del agents[host]
+    return {"status": "removed"}

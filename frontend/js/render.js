@@ -32,11 +32,11 @@ const els = {
 
   procCount: document.getElementById('proc-count'),
   procBody:  document.getElementById('proc-table-body'),
-};
 
-// Hide network card immediately — backend doesn't send network data
-const _netCard = document.getElementById('card-net');
-if (_netCard) _netCard.style.display = 'none';
+  netValue: document.getElementById('net-value'),
+  netBar:   document.getElementById('net-bar'),
+  netMeta:  document.getElementById('net-meta'),
+};
 
 // ── Disconnect overlay (injected once on demand) ──
 let _overlayEl = null;
@@ -102,6 +102,23 @@ function renderMetrics(m) {
     els.diskMeta.textContent  = fmt1(pct) + '% utilisation';
     setAlertClass(document.getElementById('card-disk'), pct);
   }
+
+  // Network Speed
+  if (m.network && m.network.speed_recv != null) {
+  const up = m.network.speed_send;
+  const down = m.network.speed_recv;
+  const total = up + down;
+
+  // Cap visual gauge at roughly 5MB/s for the progress bar (adjustable)
+  const visualPct = Math.min((total / 5000) * 100, 100); 
+
+  els.netValue.innerHTML = `${total.toFixed(0)}<span class="mc-unit">KB/s</span>`;
+  els.netBar.style.width = visualPct + '%';
+  els.netMeta.textContent = `↑ ${up.toFixed(1)} · ↓ ${down.toFixed(1)}`;
+
+  // Update the SVG Ring (bypasses the MutationObserver)
+  if (window.setRing) window.setRing('ring-net', visualPct);
+  }
 }
 
 /**
@@ -121,18 +138,33 @@ function setAlertClass(card, pct) {
 function renderProcesses(procs) {
   if (!Array.isArray(procs) || procs.length === 0) return;
 
-  els.procCount.textContent = `${procs.length} shown`;
+  els.procCount.textContent = `${procs.length} running`;
 
-  // Build all rows as a single HTML string → one DOM write
-  els.procBody.innerHTML = procs.map(p => `
-    <tr>
-      <td>${p.pid ?? '--'}</td>
-      <td title="${escHtml(p.name ?? '')}">${escHtml(truncate(p.name ?? '--', 22))}</td>
-      <td>${fmt1(p.cpu_percent ?? 0)}</td>
-      <td>${fmt1(p.memory_percent ?? 0)}</td>
-      <td><span class="proc-status proc-status--${statusClass(p.status)}">${statusLabel(p.status)}</span></td>
-    </tr>
-  `).join('');
+  // 1. Check if the system is under heavy load (any process > 85%)
+  const isSystemStressed = procs.some(p => p.cpu_percent > 85);
+  const procCard = document.querySelector('.process-card');
+  
+  if (isSystemStressed) {
+    procCard.classList.add('alert'); // Triggers your CSS flash
+  } else {
+    procCard.classList.remove('alert');
+  }
+
+  // 2. Build rows, adding a specific class for "Heavy" processes
+  els.procBody.innerHTML = procs.map(p => {
+    // Flag processes using more than 50% CPU for a visual highlight
+    const isHeavy = p.cpu_percent > 50 ? 'proc-row--heavy' : '';
+    
+    return `
+      <tr class="${isHeavy}">
+        <td>${p.pid ?? '--'}</td>
+        <td title="${escHtml(p.name ?? '')}">${escHtml(truncate(p.name ?? '--', 22))}</td>
+        <td>${fmt1(p.cpu_percent ?? 0)}</td>
+        <td>${fmt1(p.memory_percent ?? 0)}</td>
+        <td><span class="proc-status proc-status--${statusClass(p.status)}">${statusLabel(p.status)}</span></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // ── Disconnect overlay ──

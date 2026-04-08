@@ -1,5 +1,10 @@
 import psutil
+import time
 from app.config import TOP_PROCESS_LIMIT
+from collections import deque
+
+
+history_buffer = deque(maxlen=60)
 
 def get_cpu_usage():
     try:
@@ -54,3 +59,26 @@ def get_top_processes(limit=5):
     processes.sort(key=lambda p: p["cpu"], reverse=True)
     return processes[:limit]
 
+
+def get_network_usage():
+    try:
+        net = psutil.net_io_counters()
+        return {
+            "bytes_sent": net.bytes_sent,
+            "bytes_recv": net.bytes_recv
+        }
+    except Exception:
+        return {"bytes_sent": 0, "bytes_recv": 0}
+
+def get_full_stats():
+    """Compiles all stats and appends them to the history buffer."""
+    stats = {
+        "cpu": get_cpu_usage(),
+        "memory": get_memory_usage()["percent"],
+        "disk": get_disk_usage()["percent"],
+        "network": get_network_usage(),
+        "processes": get_top_processes(limit=TOP_PROCESS_LIMIT),
+        "timestamp": int(time.time() * 1000) # Milliseconds for JS compatibility
+    }
+    history_buffer.append(stats)
+    return stats

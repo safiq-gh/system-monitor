@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,72 +10,158 @@
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════════
-       HEADER
-  ═══════════════════════════════════════════ -->
+  <!-- HEADER -->
   <header class="header">
     <div class="header__brand">
-      <span class="header__logo">⬡</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="brand-icon">
+        <polygon points="8,1 14.5,4.5 14.5,11.5 8,15 1.5,11.5 1.5,4.5" stroke="currentColor" stroke-width="1.1" fill="none"/>
+        <circle cx="8" cy="8" r="2.2" fill="currentColor"/>
+      </svg>
       <span class="header__title">SYSMON</span>
-      <span class="header__subtitle">/ system dashboard</span>
+      <span class="header__sep">/</span>
+      <span class="header__subtitle">system dashboard</span>
     </div>
-    <div class="header__status">
-      <span id="connection-dot" class="status-dot status-dot--connecting"></span>
-      <span id="connection-label" class="status-label">CONNECTING</span>
+
+    <div class="header__status-bar">
+      <div class="hstat">
+        <span class="hstat__label">UPTIME</span>
+        <span class="hstat__value" id="uptime-label">00:00:00</span>
+      </div>
+      <div class="hstat-divider"></div>
+      <div class="hstat">
+        <span id="connection-dot" class="status-dot status-dot--connecting"></span>
+        <span id="connection-label" class="status-label">CONNECTING</span>
+      </div>
+      <div class="hstat-divider"></div>
       <span id="last-update" class="status-timestamp">--:--:--</span>
+    </div>
+
+    <div class="header__actions">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+        <svg class="ti ti--moon" width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5s2.2 5 5 5c1.9 0 3.5-1 4.4-2.5-.3 0-.6.1-.9.1C7.2 9.1 4.9 6.8 4.9 4c0-.6.1-1.2.3-1.7C4.9 2.1 5.7 1.5 6.5 1.5z" fill="currentColor"/>
+        </svg>
+        <svg class="ti ti--sun" width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <circle cx="6.5" cy="6.5" r="2.5" fill="currentColor"/>
+          <line x1="6.5" y1="0.5" x2="6.5" y2="2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="6.5" y1="11" x2="6.5" y2="12.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="0.5" y1="6.5" x2="2" y2="6.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="11" y1="6.5" x2="12.5" y2="6.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="2.4" y1="2.4" x2="3.5" y2="3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="9.5" y1="9.5" x2="10.6" y2="10.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="10.6" y1="2.4" x2="9.5" y2="3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="3.5" y1="9.5" x2="2.4" y2="10.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <!-- ═══════════════════════════════════════════
-       MAIN GRID
-  ═══════════════════════════════════════════ -->
   <main class="dashboard">
 
     <!-- ── ROW 1: Metric Cards ── -->
     <section class="metrics-row">
 
       <div class="card metric-card" id="card-cpu">
-        <div class="card__label">CPU USAGE</div>
-        <div class="card__value" id="cpu-value">--%</div>
-        <div class="card__bar">
-          <div class="bar-track">
-            <div class="bar-fill bar-fill--cpu" id="cpu-bar"></div>
+        <div class="mc-accent mc-accent--cpu"></div>
+        <div class="mc-inner">
+          <div class="mc-top">
+            <div class="mc-info">
+              <div class="mc-label">CPU USAGE</div>
+              <div class="mc-value" id="cpu-value">--<span class="mc-unit">%</span></div>
+              <div class="mc-sub" id="cpu-meta">-- utilisation</div>
+            </div>
+            <svg class="mc-ring" viewBox="0 0 56 56">
+              <circle class="ring-track" cx="28" cy="28" r="22"/>
+              <circle class="ring-fill ring-fill--cpu" id="ring-cpu" cx="28" cy="28" r="22"
+                stroke-dasharray="0 138.2" stroke-dashoffset="34.6"/>
+            </svg>
+          </div>
+          <div class="mc-bar-row">
+            <div class="bar-track"><div class="bar-fill bar-fill--cpu" id="cpu-bar"></div></div>
+            <span class="mc-bar-pct" id="cpu-bar-pct">0%</span>
+          </div>
+          <div class="mc-footer">
+            <span class="mc-tag mc-tag--warn">WARN &gt;75</span>
+            <span class="mc-tag mc-tag--err">CRIT &gt;90</span>
           </div>
         </div>
-        <div class="card__meta" id="cpu-meta">-- cores · -- GHz</div>
       </div>
 
       <div class="card metric-card" id="card-mem">
-        <div class="card__label">MEMORY</div>
-        <div class="card__value" id="mem-value">--%</div>
-        <div class="card__bar">
-          <div class="bar-track">
-            <div class="bar-fill bar-fill--mem" id="mem-bar"></div>
+        <div class="mc-accent mc-accent--mem"></div>
+        <div class="mc-inner">
+          <div class="mc-top">
+            <div class="mc-info">
+              <div class="mc-label">MEMORY</div>
+              <div class="mc-value" id="mem-value">--<span class="mc-unit">%</span></div>
+              <div class="mc-sub" id="mem-meta">-- utilisation</div>
+            </div>
+            <svg class="mc-ring" viewBox="0 0 56 56">
+              <circle class="ring-track" cx="28" cy="28" r="22"/>
+              <circle class="ring-fill ring-fill--mem" id="ring-mem" cx="28" cy="28" r="22"
+                stroke-dasharray="0 138.2" stroke-dashoffset="34.6"/>
+            </svg>
+          </div>
+          <div class="mc-bar-row">
+            <div class="bar-track"><div class="bar-fill bar-fill--mem" id="mem-bar"></div></div>
+            <span class="mc-bar-pct" id="mem-bar-pct">0%</span>
+          </div>
+          <div class="mc-footer">
+            <span class="mc-tag mc-tag--warn">WARN &gt;75</span>
+            <span class="mc-tag mc-tag--err">CRIT &gt;90</span>
           </div>
         </div>
-        <div class="card__meta" id="mem-meta">-- GB used / -- GB total</div>
       </div>
 
       <div class="card metric-card" id="card-disk">
-        <div class="card__label">DISK</div>
-        <div class="card__value" id="disk-value">--%</div>
-        <div class="card__bar">
-          <div class="bar-track">
-            <div class="bar-fill bar-fill--disk" id="disk-bar"></div>
+        <div class="mc-accent mc-accent--disk"></div>
+        <div class="mc-inner">
+          <div class="mc-top">
+            <div class="mc-info">
+              <div class="mc-label">DISK</div>
+              <div class="mc-value" id="disk-value">--<span class="mc-unit">%</span></div>
+              <div class="mc-sub" id="disk-meta">-- utilisation</div>
+            </div>
+            <svg class="mc-ring" viewBox="0 0 56 56">
+              <circle class="ring-track" cx="28" cy="28" r="22"/>
+              <circle class="ring-fill ring-fill--disk" id="ring-disk" cx="28" cy="28" r="22"
+                stroke-dasharray="0 138.2" stroke-dashoffset="34.6"/>
+            </svg>
+          </div>
+          <div class="mc-bar-row">
+            <div class="bar-track"><div class="bar-fill bar-fill--disk" id="disk-bar"></div></div>
+            <span class="mc-bar-pct" id="disk-bar-pct">0%</span>
+          </div>
+          <div class="mc-footer">
+            <span class="mc-tag mc-tag--warn">WARN &gt;75</span>
+            <span class="mc-tag mc-tag--err">CRIT &gt;90</span>
           </div>
         </div>
-        <div class="card__meta" id="disk-meta">-- GB used / -- GB total</div>
       </div>
 
       <div class="card metric-card" id="card-net">
-        <div class="card__label">NETWORK</div>
-        <div class="card__value" id="net-value">-- KB/s</div>
-        <div class="card__bar">
-          <div class="bar-track">
-            <div class="bar-fill bar-fill--net" id="net-bar"></div>
+        <div class="mc-accent mc-accent--net"></div>
+        <div class="mc-inner">
+          <div class="mc-top">
+            <div class="mc-info">
+              <div class="mc-label">NETWORK</div>
+              <div class="mc-value" id="net-value">--<span class="mc-unit">KB/s</span></div>
+              <div class="mc-sub" id="net-meta">↑ -- · ↓ --</div>
+            </div>
+            <svg class="mc-ring" viewBox="0 0 56 56">
+              <circle class="ring-track" cx="28" cy="28" r="22"/>
+              <circle class="ring-fill ring-fill--net" id="ring-net" cx="28" cy="28" r="22"
+                stroke-dasharray="0 138.2" stroke-dashoffset="34.6"/>
+            </svg>
+          </div>
+          <div class="mc-bar-row">
+            <div class="bar-track"><div class="bar-fill bar-fill--net" id="net-bar"></div></div>
+            <span class="mc-bar-pct" id="net-bar-pct">0%</span>
+          </div>
+          <div class="mc-footer">
+            <span class="mc-tag mc-tag--ok">NORMAL</span>
           </div>
         </div>
-        <div class="card__meta" id="net-meta">↑ -- KB/s · ↓ -- KB/s</div>
       </div>
 
     </section>
@@ -84,11 +170,16 @@
     <section class="charts-row">
 
       <div class="card chart-card">
-        <div class="card__header">
-          <span class="card__label">CPU HISTORY</span>
-          <span class="chart__legend">
-            <span class="legend-dot legend-dot--cpu"></span>60s window
-          </span>
+        <div class="chart-header">
+          <div class="ch-left">
+            <span class="ch-dot ch-dot--cpu"></span>
+            <span class="ch-title">CPU HISTORY</span>
+            <span class="ch-window">60s window</span>
+          </div>
+          <div class="ch-right">
+            <span class="ch-stat">AVG <strong id="cpu-avg">--%</strong></span>
+            <span class="ch-stat">PEAK <strong id="cpu-peak">--%</strong></span>
+          </div>
         </div>
         <div class="chart-container">
           <svg id="chart-cpu" class="chart-svg" preserveAspectRatio="none"></svg>
@@ -96,51 +187,92 @@
       </div>
 
       <div class="card chart-card">
-        <div class="card__header">
-          <span class="card__label">MEMORY HISTORY</span>
-          <span class="chart__legend">
-            <span class="legend-dot legend-dot--mem"></span>60s window
-          </span>
+        <div class="chart-header">
+          <div class="ch-left">
+            <span class="ch-dot ch-dot--mem"></span>
+            <span class="ch-title">MEMORY HISTORY</span>
+            <span class="ch-window">60s window</span>
+          </div>
+          <div class="ch-right">
+            <span class="ch-stat">AVG <strong id="mem-avg">--%</strong></span>
+            <span class="ch-stat">PEAK <strong id="mem-peak">--%</strong></span>
+          </div>
         </div>
         <div class="chart-container">
           <svg id="chart-mem" class="chart-svg" preserveAspectRatio="none"></svg>
         </div>
       </div>
 
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="ch-left">
+            <span class="ch-dot ch-dot--disk"></span>
+            <span class="ch-title">DISK HISTORY</span>
+            <span class="ch-window">60s window</span>
+          </div>
+          <div class="ch-right">
+            <span class="ch-stat">AVG <strong id="disk-avg">--%</strong></span>
+            <span class="ch-stat">PEAK <strong id="disk-peak">--%</strong></span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <svg id="chart-disk" class="chart-svg" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="ch-left">
+            <span class="ch-dot ch-dot--net"></span>
+            <span class="ch-title">NETWORK HISTORY</span>
+            <span class="ch-window">60s window</span>
+          </div>
+          <div class="ch-right">
+            <span class="ch-stat">AVG <strong id="net-avg">--%</strong></span>
+            <span class="ch-stat">PEAK <strong id="net-peak">--%</strong></span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <svg id="chart-net" class="chart-svg" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+
+     </section>
+
+    <!-- ── ROW 3: Agents ── -->
+    <section class="agents-row">
+      <div class="card agents-card">
+        <div class="section-hdr">
+          <div class="section-hdr__left">
+            <span class="sh-label">MONITORED AGENTS</span>
+            <span class="sh-count" id="agents-count">0 nodes</span>
+          </div>
+          <span class="sh-right">multi-machine polling · 2s</span>
+        </div>
+        <div class="agents-container" id="agents">
+          <div class="agents-empty">— No agents connected —</div>
+        </div>
+      </div>
     </section>
-
-    <!-- ── ROW 3: AGENTS (MULTI-MACHINE) ── -->
-<section class="agents-row">
-
-  <div class="card agents-card">
-    <div class="card__header">
-      <span class="card__label">MONITORED AGENTS</span>
-      <span class="card__meta" id="agents-count">-- nodes</span>
-    </div>
-
-    <div class="agents-container" id="agents">
-      <div class="agents-empty">No agents connected…</div>
-    </div>
-
-  </div>
-
-</section>
 
     <!-- ── ROW 4: Processes + Logs ── -->
     <section class="bottom-row">
 
       <div class="card process-card">
-        <div class="card__header">
-          <span class="card__label">TOP PROCESSES</span>
-          <span class="card__meta" id="proc-count">-- running</span>
+        <div class="section-hdr">
+          <div class="section-hdr__left">
+            <span class="sh-label">TOP PROCESSES</span>
+            <span class="sh-count" id="proc-count">0 running</span>
+          </div>
+          <span class="sh-right">sorted by cpu%</span>
         </div>
         <table class="proc-table">
           <thead>
             <tr>
               <th>PID</th>
               <th>NAME</th>
-              <th>CPU%</th>
-              <th>MEM%</th>
+              <th class="ta-r">CPU%</th>
+              <th class="ta-r">MEM%</th>
               <th>STATUS</th>
             </tr>
           </thead>
@@ -151,8 +283,10 @@
       </div>
 
       <div class="card log-card">
-        <div class="card__header">
-          <span class="card__label">SYSTEM LOGS</span>
+        <div class="section-hdr">
+          <div class="section-hdr__left">
+            <span class="sh-label">SYSTEM LOGS</span>
+          </div>
           <div class="log-controls">
             <button class="log-btn" id="log-clear">CLEAR</button>
             <button class="log-btn log-btn--active" id="log-scroll">AUTO↓</button>
@@ -165,7 +299,82 @@
 
   </main>
 
-  <!-- ES module entry point -->
   <script type="module" src="js/main.js"></script>
+  <script>
+    /* ── Theme toggle ── */
+    const html = document.documentElement;
+    const btn  = document.getElementById('theme-toggle');
+    const saved = localStorage.getItem('sysmon-theme');
+    if (saved) html.setAttribute('data-theme', saved);
+    btn.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('sysmon-theme', next);
+    });
+
+    /* ── Ring gauge helper ── */
+    function setRing(id, pct) {
+      const circ = 138.2;
+      const fill = Math.min(pct, 100) / 100 * circ;
+      const el = document.getElementById(id);
+      if (el) el.setAttribute('stroke-dasharray', `${fill.toFixed(1)} ${circ}`);
+    }
+
+    /* Watch a value element and drive ring + bar-pct label */
+    function watchMetric(valueId, ringId, barPctId) {
+      const valueEl = document.getElementById(valueId);
+      const barPctEl = document.getElementById(barPctId);
+      if (!valueEl) return;
+      const obs = new MutationObserver(() => {
+        const raw = valueEl.textContent.replace(/[^0-9.]/g, '');
+        const pct = parseFloat(raw);
+        if (!isNaN(pct)) {
+          setRing(ringId, pct);
+          if (barPctEl) barPctEl.textContent = pct.toFixed(1) + '%';
+        }
+      });
+      obs.observe(valueEl, { childList: true, subtree: true, characterData: true });
+    }
+
+    /* ── Uptime counter ── */
+    let _sec = 0;
+    const upEl = document.getElementById('uptime-label');
+    setInterval(() => {
+      _sec++;
+      const h = String(Math.floor(_sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((_sec % 3600) / 60)).padStart(2, '0');
+      const s = String(_sec % 60).padStart(2, '0');
+      if (upEl) upEl.textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      watchMetric('cpu-value',  'ring-cpu',  'cpu-bar-pct');
+      watchMetric('mem-value',  'ring-mem',  'mem-bar-pct');
+      watchMetric('disk-value', 'ring-disk', 'disk-bar-pct');
+    });
+
+    /* ── Chart avg/peak stats — handles all 4 metrics ── */
+window.__updateChartStats = function(cpuHist, memHist, diskHist, netHist) {
+  const avg  = a => a && a.length ? (a.reduce((x,y)=>x+y,0)/a.length).toFixed(1) : '--';
+  const peak = a => a && a.length ? Math.max(...a).toFixed(1) : '--';
+  const set  = (id, v, unit='%') => { 
+      const e = document.getElementById(id); 
+      if(e) e.textContent = v === '--' ? v : v + unit; 
+  };
+  
+  // CPU & Memory
+  set('cpu-avg',  avg(cpuHist));  set('cpu-peak',  peak(cpuHist));
+  set('mem-avg',  avg(memHist));  set('mem-peak',  peak(memHist));
+  
+  // Disk & Network
+  set('disk-avg', avg(diskHist)); set('disk-peak', peak(diskHist));
+  // Convert the 0-100 percentage back to the 5000 KB/s scale
+  const netAvgRaw = netHist && netHist.length ? (netHist.reduce((x,y)=>x+y,0)/netHist.length) * 50 : 0;
+  const netPeakRaw = netHist && netHist.length ? Math.max(...netHist) * 50 : 0;
+
+  set('net-avg', netAvgRaw > 0 ? netAvgRaw.toFixed(0) : '--', ' KB/s');
+  set('net-peak', netPeakRaw > 0 ? netPeakRaw.toFixed(0) : '--', ' KB/s');
+};
+  </script>
 </body>
 </html>

@@ -9,7 +9,9 @@ from app.config import TOP_PROCESS_LIMIT
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
 import logging
-
+from app.services.system_stats import get_full_stats, history_buffer
+import time
+from app.state import agents
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -35,21 +37,31 @@ def processes():
 @router.websocket("/ws/metrics")
 async def websocket_metrics(websocket: WebSocket):
     await websocket.accept()
-
+    
     try:
         while True:
-            data = await asyncio.to_thread(
-                lambda: {
-                    "cpu": get_cpu_usage(),
-                    "memory": get_memory_usage()["percent"],
-                    "disk": get_disk_usage()["percent"],
-                    "processes": get_top_processes(limit=TOP_PROCESS_LIMIT),
-                }
-            )
-
-            await websocket.send_json(data)
-            await asyncio.sleep(2)
+            # 1. Get local stats
+            data = await asyncio.to_thread(get_full_stats)
+            
+            # 2. Get active agents (using the TTL logic from Phase 1)
+            current_time = time.time()
+            active_agents = {
+                host: info for host, info in agents.items() 
+                if current_time - info.get("last_seen", 0) < 10
+            }
+            
+            # 3. Bundle them together
+            payload = {
+                "type": "live",
+                "metrics": data,
+                "agents": active_agents
+            }
+            
+            await websocket.send_json(payload)
+            
+            # 4. High-Frequency Tick
+            # Change this to 0.2 for "Gaming Monitor" levels of responsiveness
+            await asyncio.sleep(0.5) 
 
     except WebSocketDisconnect:
-        print("WebSocket client disconnected")
-
+        logger.info("Client disconnected")
